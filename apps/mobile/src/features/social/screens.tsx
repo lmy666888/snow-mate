@@ -5,11 +5,9 @@ import {
   PanResponder,
   Pressable,
   View,
-  Share,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import {
-  ArrowUpRight,
   Heart,
   Info,
   MapPin,
@@ -22,11 +20,10 @@ import {
   AppButton,
   AppCard,
   AppText,
-  Avatar,
   Badge,
   BottomSheet,
-  Chip,
   ChoiceGroup,
+  EmptyState,
   Field,
   IconButton,
   PageHeader,
@@ -36,40 +33,54 @@ import {
   go,
 } from "../../components/ui";
 import { colors as c } from "../../theme/tokens";
-import { images, riders } from "./data";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
-import { usePrototype } from "../../stores/prototype";
+import { useSocial } from "../../stores/social";
+import { eligibility } from "../identity/model";
+import { useStorageError } from "../../services/storage";
+import {
+  demoRepository,
+  demoRiders,
+  defaultFilters,
+  interests,
+} from "./demoRepository";
+import { displayDistance, distanceKm } from "../regions/model";
+import { RiderAvatar } from "./Avatar";
+import { images } from "./data";
 export function DiscoverScreen() {
-  const reduced = useReducedMotion();
-  const [index, setIndex] = useState(0);
-  const [filters, setFilters] = useState(false);
-  const [level, setLevel] = useState("All levels");
+  const state = useSocial(),
+    reduced = useReducedMotion(),
+    storageError = useStorageError();
+  const [filters, setFilters] = useState(false),
+    [decision, setDecision] = useState(""),
+    [moving, setMoving] = useState(false);
   const [position] = useState(() => new Animated.ValueXY());
-  const [decision, setDecision] = useState("");
-  const rider = riders[index % riders.length];
+  const rider = demoRepository.list(state.region, state.filters, state)[0];
   const move = useCallback(
     (like: boolean) => {
+      if (!rider || moving) return;
+      setMoving(true);
       setDecision(like ? "LIKE" : "PASS");
       Animated.timing(position, {
-        toValue: { x: like ? 450 : -450, y: 10 },
+        toValue: { x: like ? 450 : -450, y: 0 },
         duration: reduced ? 0 : 220,
         useNativeDriver: true,
       }).start(() => {
+        const match = state.swipe(rider.id, like ? "like" : "pass");
         position.setValue({ x: 0, y: 0 });
         setDecision("");
-        setIndex((i) => i + 1);
-        if (like) go("/discover/match");
+        setMoving(false);
+        if (match) go(`/discover/match?id=${rider.id}`);
       });
     },
-    [position, reduced],
+    [rider, moving, position, reduced, state],
   );
   const responder = useMemo(
     () =>
       PanResponder.create({
         onMoveShouldSetPanResponder: (_, g) =>
-          Math.abs(g.dx) > 12 && Math.abs(g.dx) > Math.abs(g.dy),
+          !moving && Math.abs(g.dx) > 12 && Math.abs(g.dx) > Math.abs(g.dy),
         onPanResponderMove: (_, g) => {
-          position.setValue({ x: g.dx, y: g.dy * 0.12 });
+          position.setValue({ x: g.dx, y: g.dy * 0.1 });
           setDecision(g.dx > 35 ? "LIKE" : g.dx < -35 ? "PASS" : "");
         },
         onPanResponderRelease: (_, g) => {
@@ -82,9 +93,14 @@ export function DiscoverScreen() {
             }).start();
           }
         },
+        onPanResponderTerminate: () => {
+          setDecision("");
+          position.setValue({ x: 0, y: 0 });
+        },
       }),
-    [position, move],
+    [moving, move, position],
   );
+  const blockedReason = eligibility(state.identity);
   return (
     <ScreenContainer>
       <PageHeader
@@ -99,164 +115,177 @@ export function DiscoverScreen() {
         }
       />
       <Row style={{ justifyContent: "space-between" }}>
-        <Row>
-          <MapPin size={14} color={c.accent} />
-          <AppText variant="label" style={{ color: c.muted }}>
-            NORTHEAST, US
-          </AppText>
-          <Badge>DEMO</Badge>
-        </Row>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Change discovery region"
+          onPress={() => go("/profile/region")}
+        >
+          <Row>
+            <MapPin size={15} color={c.accent} />
+            <AppText variant="label">
+              {state.region.city} ·{" "}
+              {state.region.discovery === "all"
+                ? "All regions"
+                : state.region.discovery}
+            </AppText>
+          </Row>
+        </Pressable>
         <IconButton
           icon={SlidersHorizontal}
           label="Discovery preferences"
           onPress={() => setFilters(true)}
         />
       </Row>
-      <View style={{ paddingHorizontal: 1 }}>
-        <View
-          style={{
-            position: "absolute",
-            backgroundColor: c.raised,
-            top: 12,
-            left: 12,
-            right: 12,
-            bottom: -8,
-            borderRadius: 25,
-          }}
+      <Badge>FICTIONAL DEMO · 18+</Badge>
+      {storageError && (
+        <AppCard>
+          <AppText accessibilityRole="alert">{storageError}</AppText>
+        </AppCard>
+      )}
+      {blockedReason ? (
+        <EmptyState
+          title={
+            blockedReason === "adult-required"
+              ? "Adult riders only."
+              : "Complete your riding identity."
+          }
+          message={
+            blockedReason === "photo-required"
+              ? "Add at least one photo before account-preview discovery."
+              : "Complete onboarding before meeting other riders. Demo identities must also be 18 or older."
+          }
+          action="Continue onboarding"
+          onPress={() => go("/identity/onboarding")}
         />
-        <Animated.View
-          {...responder.panHandlers}
-          style={{
-            transform: [
-              ...position.getTranslateTransform(),
-              {
-                rotate: reduced
-                  ? "0deg"
-                  : position.x.interpolate({
-                      inputRange: [-250, 0, 250],
-                      outputRange: ["-12deg", "0deg", "12deg"],
-                    }),
-              },
-            ],
-          }}
-        >
-          <ImageBackground
-            source={images.rider}
-            accessibilityLabel="Stock rider photo representing a fictional demo profile"
-            imageStyle={{ borderRadius: 24, width: "100%", height: "100%" }}
+      ) : !state.discoveryVisible ? (
+        <EmptyState
+          title="Discovery is paused."
+          message="Turn discovery on in privacy settings to explore fictional riders."
+          action="Settings"
+          onPress={() => go("/profile/settings")}
+        />
+      ) : rider ? (
+        <>
+          <Animated.View
+            {...responder.panHandlers}
             style={{
-              minHeight: 380,
-              borderRadius: 24,
-              overflow: "hidden",
-              justifyContent: "space-between",
+              touchAction: "pan-y",
+              transform: [
+                ...position.getTranslateTransform(),
+                {
+                  rotate: reduced
+                    ? "0deg"
+                    : position.x.interpolate({
+                        inputRange: [-250, 0, 250],
+                        outputRange: ["-10deg", "0deg", "10deg"],
+                      }),
+                },
+              ],
             }}
           >
-            <View
+            <ImageBackground
+              source={images.mountain}
+              imageStyle={{ width: "100%", height: "100%", borderRadius: 24 }}
               style={{
-                position: "absolute",
-                inset: 0,
-                backgroundColor: "#F4DBE810",
-              }}
-            />
-            <Row style={{ padding: 18, justifyContent: "space-between" }}>
-              <Badge tone="green">OPEN TO RIDING</Badge>
-              <IconButton
-                icon={Info}
-                label="Rider profile details"
-                onPress={() => go(`/discover/rider?id=${rider.id}`)}
-              />
-            </Row>
-            {!!decision && (
-              <View
-                style={{
-                  position: "absolute",
-                  top: 94,
-                  left: 20,
-                  borderWidth: 3,
-                  borderColor: decision === "LIKE" ? c.green : c.coral,
-                  padding: 12,
-                  borderRadius: 10,
-                  transform: [{ rotate: "-12deg" }],
-                }}
-              >
-                <AppText variant="title">{decision}</AppText>
-              </View>
-            )}
-            <View
-              style={{
-                padding: 22,
-                paddingTop: 28,
-                backgroundColor: c.overlay,
-                gap: 10,
+                minHeight: 360,
+                borderRadius: 24,
+                overflow: "hidden",
+                justifyContent: "space-between",
               }}
             >
-              <Row style={{ justifyContent: "space-between" }}>
-                <AppText variant="display">
+              <Row style={{ padding: 18, justifyContent: "space-between" }}>
+                <RiderAvatar rider={rider} size={72} />
+                <IconButton
+                  icon={Info}
+                  label="Rider profile details"
+                  onPress={() => go(`/discover/rider?id=${rider.id}`)}
+                />
+              </Row>
+              {!!decision && (
+                <View
+                  style={{
+                    position: "absolute",
+                    top: 105,
+                    left: 20,
+                    padding: 12,
+                    borderRadius: 10,
+                    borderWidth: 2,
+                    borderColor: decision === "LIKE" ? c.green : c.coral,
+                    backgroundColor: c.surface,
+                  }}
+                >
+                  <AppText variant="title">{decision}</AppText>
+                </View>
+              )}
+              <View
+                style={{ padding: 20, gap: 10, backgroundColor: c.overlay }}
+              >
+                <AppText variant="title">
                   {rider.name}, {rider.age}
                 </AppText>
-                <ArrowUpRight color={c.accent} size={24} />
-              </Row>
-              <Row>
-                <Badge>{rider.level}</Badge>
-                <AppText variant="label">{rider.stance} stance</AppText>
-              </Row>
-              <Row>
-                <MapPin color={c.accent} size={14} />
+                <Row>
+                  <Badge>{rider.level}</Badge>
+                  <Badge>{rider.stance}</Badge>
+                </Row>
                 <AppText variant="label">
-                  {rider.resort} · fictional profile
+                  {rider.city} ·{" "}
+                  {displayDistance(
+                    distanceKm(state.region.city, rider.city),
+                    state.region.distanceUnit,
+                    state.language,
+                  )}
                 </AppText>
-              </Row>
-              <Row style={{ flexWrap: "wrap", gap: 7 }}>
-                {rider.interests.map((v) => (
-                  <AppText
-                    key={v}
-                    variant="caption"
-                    style={{
-                      color: c.text,
-                      borderWidth: 1,
-                      borderColor: c.border,
-                      borderRadius: 30,
-                      paddingHorizontal: 9,
-                      paddingVertical: 5,
-                    }}
-                  >
-                    {v}
-                  </AppText>
-                ))}
-              </Row>
-            </View>
-          </ImageBackground>
-        </Animated.View>
-      </View>
-      <Row style={{ justifyContent: "center", gap: 28, marginTop: 5 }}>
-        <IconButton
-          icon={X}
-          size={62}
-          label="Pass rider"
-          onPress={() => move(false)}
+                <AppText variant="label">{rider.resort}</AppText>
+                <Row style={{ flexWrap: "wrap" }}>
+                  {rider.interests.map((v) => (
+                    <Badge key={v}>{v}</Badge>
+                  ))}
+                </Row>
+                <PrototypeNote>
+                  Fictional identity · initials placeholder · generic mountain
+                  photo
+                </PrototypeNote>
+              </View>
+            </ImageBackground>
+          </Animated.View>
+          <Row style={{ justifyContent: "center", gap: 28 }}>
+            <IconButton
+              icon={X}
+              label="Pass rider"
+              size={60}
+              onPress={() => move(false)}
+            />
+            <IconButton
+              icon={RotateCcw}
+              label="Undo last swipe"
+              onPress={state.undo}
+            />
+            <IconButton
+              icon={Heart}
+              label="Like rider"
+              size={60}
+              accent
+              onPress={() => move(true)}
+            />
+          </Row>
+        </>
+      ) : (
+        <EmptyState
+          title="A little more room to explore."
+          message="No unseen fictional riders match these filters. Adjust your region, interests or distance, or revisit viewed profiles."
+          action="Revisit viewed profiles"
+          onPress={state.resetViewed}
         />
-        <IconButton
-          icon={RotateCcw}
-          label="Reset preview cards"
-          onPress={() => setIndex(0)}
-        />
-        <IconButton
-          icon={Heart}
-          size={62}
-          accent
-          label="Like rider and preview match"
-          onPress={() => move(true)}
-        />
-      </Row>
-      <AppText
-        variant="caption"
-        style={{ color: c.muted, textAlign: "center" }}
-      >
-        A shared mountain is a pretty good start.
-      </AppText>
+      )}
       <PrototypeNote>
-        Fictional riders · swipe animation preview · likes open a sample match
+        Demo likes only match when a seeded fictional rider has also liked you.
+        No real people or activity.
       </PrototypeNote>
+      <AppButton
+        label="Manage discovery filters"
+        variant="ghost"
+        onPress={() => setFilters(true)}
+      />
       <BottomSheet
         visible={filters}
         title="Your kind of riding"
@@ -264,262 +293,255 @@ export function DiscoverScreen() {
       >
         <ChoiceGroup
           label="Skill level"
-          options={["All levels", "Beginner", "Intermediate", "Advanced"]}
-          value={level}
-          onChange={setLevel}
+          options={[
+            "All levels",
+            "Beginner",
+            "Intermediate",
+            "Advanced",
+            "Expert",
+          ]}
+          value={state.filters.level}
+          onChange={(level) => state.setFilters({ level })}
         />
-        <AppText style={{ color: c.muted }}>
-          Preferences are a visual preview. The fictional card deck is
-          unchanged.
-        </AppText>
-        <AppButton label="Done" onPress={() => setFilters(false)} />
+        <ChoiceGroup
+          label="Stance"
+          options={["Any stance", "Regular", "Goofy"]}
+          value={state.filters.stance}
+          onChange={(stance) => state.setFilters({ stance })}
+        />
+        <ChoiceGroup
+          label="Interests"
+          options={["Any interest", ...interests]}
+          value={state.filters.interest}
+          onChange={(interest) => state.setFilters({ interest })}
+        />
+        <AppButton
+          label="Reset filters"
+          variant="secondary"
+          onPress={() => state.setFilters(defaultFilters)}
+        />
+        <AppButton label="Apply filters" onPress={() => setFilters(false)} />
       </BottomSheet>
     </ScreenContainer>
   );
 }
 export function RiderDetailScreen() {
-  const { id } = useLocalSearchParams();
-  const rider = riders.find((v) => v.id === id) ?? riders[0];
-  const notify = usePrototype((s) => s.notify);
+  const { id } = useLocalSearchParams<{ id: string }>(),
+    state = useSocial(),
+    rider = demoRiders.find((r) => r.id === id);
   return (
     <ScreenContainer>
-      <PageHeader
-        back
-        title={`Meet ${rider.name}.`}
-        subtitle="Fictional demo rider"
-      />
-      <ImageBackground
-        source={images.rider}
-        style={{ height: 320 }}
-        imageStyle={{ borderRadius: 24, width: "100%", height: "100%" }}
-      />
-      <Row>
-        <Badge>{rider.level}</Badge>
-        <Badge>{rider.stance}</Badge>
-      </Row>
-      <AppText variant="title">Here for the good days.</AppText>
-      <AppText style={{ color: c.muted }}>{rider.bio}</AppText>
-      <AppCard>
-        <AppText variant="label" style={{ color: c.accent }}>
-          HOME MOUNTAIN
-        </AppText>
-        <AppText variant="title">{rider.resort}</AppText>
-        <Row style={{ flexWrap: "wrap" }}>
-          {rider.interests.map((v) => (
-            <Chip key={v} label={v} />
-          ))}
-        </Row>
-      </AppCard>
-      <AppButton
-        label="Preview a match"
-        icon={Heart}
-        onPress={() => go("/discover/match")}
-      />
-      <Row>
-        <AppButton
-          label="Block preview"
-          variant="ghost"
-          onPress={() =>
-            notify("Block control preview. No real account was blocked.")
-          }
+      <PageHeader back title="A shared mountain story." />
+      {!rider || state.blocked.includes(rider.id) ? (
+        <EmptyState
+          title="Rider unavailable."
+          message="This fictional rider is not available."
         />
-        <AppButton
-          label="Report preview"
-          variant="ghost"
-          onPress={() => notify("Report flow planned after UI approval.")}
-        />
-      </Row>
+      ) : (
+        <>
+          <RiderAvatar rider={rider} size={100} />
+          <AppText variant="display">
+            {rider.name}, {rider.age}
+          </AppText>
+          <Badge>FICTIONAL DEMO · 18+</Badge>
+          <AppText>
+            {rider.city} · {rider.country}
+          </AppText>
+          <Row>
+            <Badge>{rider.level}</Badge>
+            <Badge>{rider.stance}</Badge>
+          </Row>
+          <AppText>{rider.bio}</AppText>
+          <AppCard>
+            <AppText variant="title">Riding identity</AppText>
+            <AppText>{rider.resort}</AppText>
+            <AppText>{rider.style}</AppText>
+            <Row style={{ flexWrap: "wrap" }}>
+              {rider.interests.map((v) => (
+                <Badge key={v}>{v}</Badge>
+              ))}
+            </Row>
+            <AppText>{rider.preference}</AppText>
+          </AppCard>
+          <PrototypeNote>
+            Illustrated initials are placeholders. This is a deterministic
+            fictional profile, not a real Snowmate member.
+          </PrototypeNote>
+          <AppButton
+            label="Block this demo rider"
+            variant="secondary"
+            onPress={() => {
+              state.block(rider.id);
+              router.back();
+            }}
+          />
+        </>
+      )}
     </ScreenContainer>
   );
 }
 export function MatchScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>(),
+    state = useSocial(),
+    rider = demoRiders.find((r) => r.id === id);
   return (
-    <ScreenContainer style={{ paddingTop: 38, gap: 30 }}>
-      <Badge tone="green">SAMPLE MATCH · UI PREVIEW</Badge>
-      <AppText
-        style={{
-          fontSize: 48,
-          lineHeight: 54,
-          fontWeight: "600",
-          letterSpacing: -2,
-        }}
-      >
-        Same mountain.{"\n"}New connection.
-      </AppText>
-      <View
-        style={{ height: 200, alignItems: "center", justifyContent: "center" }}
-      >
-        <View
-          style={{
-            width: 180,
-            height: 180,
-            borderRadius: 90,
-            borderWidth: 1,
-            borderColor: c.border,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Row style={{ gap: 0 }}>
-            <Avatar size={90} />
-            <View style={{ marginLeft: -18 }}>
-              <Avatar size={90} />
-            </View>
-          </Row>
-          <View
+    <ScreenContainer style={{ paddingTop: 32, gap: 28 }}>
+      {!rider ||
+      eligibility(state.identity) ||
+      !state.matches.includes(id) ||
+      state.blocked.includes(id) ? (
+        <EmptyState
+          title="No demo match here."
+          message="A one-sided like does not create a match."
+          action="Keep exploring"
+          onPress={() => go("/(tabs)/discover")}
+        />
+      ) : (
+        <>
+          <Badge tone="green">DETERMINISTIC DEMO MATCH</Badge>
+          <AppText
             style={{
-              position: "absolute",
-              bottom: -10,
-              backgroundColor: c.accent,
-              padding: 14,
-              borderRadius: 40,
+              fontSize: 42,
+              lineHeight: 49,
+              fontWeight: "500",
+              letterSpacing: -1,
             }}
           >
-            <Heart color={c.ink} size={24} />
+            Same mountain.{"\n"}New connection.
+          </AppText>
+          <View style={{ alignItems: "center", padding: 30 }}>
+            <RiderAvatar rider={rider} size={130} />
+            <Heart size={30} color={c.accent} style={{ marginTop: 18 }} />
           </View>
-        </View>
-      </View>
-      <AppText variant="title" style={{ textAlign: "center" }}>
-        You & Riley
-      </AppText>
-      <AppText style={{ color: c.muted, textAlign: "center" }}>
-        A first chair is better with a friend. Say hello and plan a mountain
-        day.
-      </AppText>
-      <AppButton
-        label="Say hello"
-        icon={MessageCircle}
-        onPress={() => go("/discover/chat")}
-      />
-      <AppButton
-        label="Keep exploring"
-        variant="secondary"
-        onPress={() => go("/(tabs)/discover")}
-      />
-      <PrototypeNote>
-        This sample illustrates the match celebration. No mutual-like
-        transaction has run.
-      </PrototypeNote>
+          <AppText variant="title" style={{ textAlign: "center" }}>
+            {state.identity.name} & {rider.name}
+          </AppText>
+          <AppText style={{ color: c.muted, textAlign: "center" }}>
+            Both demo identities liked each other. This celebration represents a
+            seeded fictional match, not real activity.
+          </AppText>
+          <AppButton
+            label="Say hello"
+            icon={MessageCircle}
+            onPress={() => go(`/discover/chat?id=${id}`)}
+          />
+          <AppButton
+            label="Keep exploring"
+            variant="secondary"
+            onPress={() => router.dismissTo("/(tabs)/discover")}
+          />
+        </>
+      )}
     </ScreenContainer>
   );
 }
 export function MatchesScreen() {
+  const state = useSocial(),
+    matched = demoRiders.filter(
+      (r) =>
+        !eligibility(state.identity) &&
+        state.matches.includes(r.id) &&
+        !state.blocked.includes(r.id),
+    );
   return (
     <ScreenContainer>
       <PageHeader
         back
         title="Your mountain crew."
-        subtitle="Demo connections · no real messages"
+        subtitle="Fictional demo connections"
       />
-      <AppText variant="label" style={{ color: c.accent }}>
-        NEW CONNECTIONS
-      </AppText>
-      <Row>
-        {riders.map((r) => (
+      {!matched.length ? (
+        <EmptyState
+          title="A connection starts with two likes."
+          message="Explore the fictional deck. Seeded reciprocal likes create demo connections."
+          action="Discover riders"
+          onPress={() => go("/(tabs)/discover")}
+        />
+      ) : (
+        matched.map((r) => (
           <Pressable
-            key={r.id}
             accessibilityRole="button"
-            accessibilityLabel={`Chat with ${r.name}`}
-            onPress={() => go("/discover/chat")}
-            style={{ gap: 9, alignItems: "center", marginRight: 12 }}
+            key={r.id}
+            onPress={() => go(`/discover/chat?id=${r.id}`)}
           >
-            <Avatar size={65} />
-            <AppText variant="label">{r.name}</AppText>
-          </Pressable>
-        ))}
-      </Row>
-      <AppText variant="title">Conversations</AppText>
-      {riders.slice(0, 2).map((r, i) => (
-        <Pressable
-          accessibilityRole="button"
-          key={r.id}
-          onPress={() => go("/discover/chat")}
-        >
-          <AppCard>
-            <Row>
-              <Avatar />
-              <View style={{ flex: 1, gap: 4 }}>
-                <Row style={{ justifyContent: "space-between" }}>
-                  <AppText style={{ fontWeight: "600" }}>{r.name}</AppText>
-                  <AppText variant="caption" style={{ color: c.muted }}>
-                    DEMO
+            <AppCard>
+              <Row>
+                <RiderAvatar rider={r} size={54} />
+                <View style={{ flex: 1, gap: 4 }}>
+                  <AppText variant="title" style={{ fontSize: 20 }}>
+                    {r.name}
                   </AppText>
-                </Row>
-                <AppText variant="label" style={{ color: c.muted }}>
-                  {i ? "Coffee before first chair?" : "Up for a Stowe weekend?"}
-                </AppText>
-              </View>
-            </Row>
-          </AppCard>
-        </Pressable>
-      ))}
+                  <AppText variant="label">{r.city}</AppText>
+                  <Badge>FICTIONAL DEMO</Badge>
+                </View>
+              </Row>
+            </AppCard>
+          </Pressable>
+        ))
+      )}
     </ScreenContainer>
   );
 }
 export function ChatScreen() {
-  const [draft, setDraft] = useState("");
-  const [messages, setMessages] = useState([
-    "Hey! Up for a Stowe weekend?",
-    "Absolutely. Cruisy runs and coffee?",
-  ]);
+  const { id } = useLocalSearchParams<{ id: string }>(),
+    state = useSocial(),
+    [draft, setDraft] = useState(""),
+    rider = demoRiders.find((r) => r.id === id),
+    allowed =
+      !eligibility(state.identity) &&
+      rider &&
+      state.matches.includes(id) &&
+      !state.blocked.includes(id);
   return (
     <ScreenContainer>
-      <PageHeader back title="Riley" subtitle="Fictional demo conversation" />
-      <AppCard>
-        <Row>
-          <Avatar />
-          <View>
-            <AppText>Riding at Stowe</AppText>
-            <AppText variant="label" style={{ color: c.muted }}>
-              Intermediate · Goofy
-            </AppText>
-          </View>
-        </Row>
-      </AppCard>
-      <AppText
-        variant="caption"
-        style={{ color: c.muted, textAlign: "center" }}
-      >
-        SAMPLE CONVERSATION
-      </AppText>
-      {messages.map((m, i) => (
-        <View
-          key={`${i}-${m}`}
-          style={{
-            alignSelf: i % 2 ? "flex-end" : "flex-start",
-            backgroundColor: i % 2 ? c.raised : c.surface,
-            borderRadius: 18,
-            padding: 16,
-            maxWidth: "85%",
-          }}
-        >
-          <AppText>{m}</AppText>
-        </View>
-      ))}
-      <Field
-        label="Message"
-        placeholder="Say hello…"
-        value={draft}
-        onChangeText={setDraft}
+      <PageHeader
+        back
+        title={rider?.name ?? "Demo conversation"}
+        subtitle="Local demo chat · nothing is sent"
       />
-      <AppButton
-        label="Preview send"
-        icon={MessageCircle}
-        disabled={!draft.trim()}
-        onPress={() => {
-          setMessages((v) => [...v, draft.trim()]);
-          setDraft("");
-        }}
-      />
-      <PrototypeNote>
-        Messages only appear on this screen and disappear when it unmounts.
-        Nothing is sent.
-      </PrototypeNote>
+      {!allowed ? (
+        <EmptyState
+          title="Conversation unavailable."
+          message="Only matched, unblocked demo riders have a conversation."
+        />
+      ) : (
+        <>
+          <Row>
+            <RiderAvatar rider={rider} size={50} />
+            <Badge>FICTIONAL DEMO</Badge>
+          </Row>
+          {(state.chats[id] ?? []).map((m) => (
+            <AppCard
+              key={m.id}
+              style={{
+                alignSelf: m.author === "you" ? "flex-end" : "flex-start",
+                maxWidth: "90%",
+                backgroundColor: m.author === "you" ? c.raised : c.surface,
+              }}
+            >
+              <AppText>{m.body}</AppText>
+            </AppCard>
+          ))}
+          <Field
+            label="Message"
+            value={draft}
+            onChangeText={setDraft}
+            placeholder="Say hello…"
+          />
+          <AppButton
+            label="Save demo message"
+            disabled={!draft.trim() || draft.length > 2000}
+            onPress={() => {
+              state.send(id, draft);
+              setDraft("");
+            }}
+          />
+          <PrototypeNote>
+            Messages persist locally for this demo. No network delivery, real
+            user, or AI reply.
+          </PrototypeNote>
+        </>
+      )}
     </ScreenContainer>
   );
-}
-export async function sharePreview(title: string) {
-  await Share.share({
-    message: `${title} — fictional Snowmate UI preview, not a reservation.`,
-  });
 }
