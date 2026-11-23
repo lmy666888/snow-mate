@@ -37,16 +37,18 @@ export const go = (path: string) => router.push(path as Href);
 export function AppText({
   children,
   variant = "body",
+  localize = true,
   style,
   ...props
 }: React.ComponentProps<typeof Text> & {
   variant?: "body" | "caption" | "label" | "title" | "display";
+  localize?: boolean;
 }) {
   useTranslation();
   return (
     <Text {...props} style={[s.text, s[variant], style]}>
       {React.Children.map(children, (child) =>
-        typeof child === "string" ? tr(child) : child,
+        typeof child === "string" && localize ? tr(child) : child,
       )}
     </Text>
   );
@@ -406,11 +408,13 @@ export function InfoRow({
   value,
   icon: Icon = ChevronRight,
   onPress,
+  localizeValue = true,
 }: {
   label: string;
   value?: string;
   icon?: LucideIcon;
   onPress?: () => void;
+  localizeValue?: boolean;
 }) {
   return (
     <Pressable
@@ -420,7 +424,11 @@ export function InfoRow({
     >
       <AppText style={{ flex: 1 }}>{label}</AppText>
       {value && (
-        <AppText variant="label" style={{ color: c.muted }}>
+        <AppText
+          localize={localizeValue}
+          variant="label"
+          style={{ color: c.muted }}
+        >
           {value}
         </AppText>
       )}

@@ -77,7 +77,9 @@ export function ProfileScreen() {
             <PrototypeNote>Initials placeholder</PrototypeNote>
           </View>
         )}
-        <AppText variant="display">{identity.name}</AppText>
+        <AppText localize={false} variant="display">
+          {identity.name}
+        </AppText>
         <AppText style={{ color: c.muted }}>
           {region.city} · {region.country}
         </AppText>
@@ -85,7 +87,7 @@ export function ProfileScreen() {
           <Badge>{identity.level}</Badge>
           <Badge>{identity.stance}</Badge>
         </Row>
-        <AppText>{identity.bio}</AppText>
+        <AppText localize={false}>{identity.bio}</AppText>
         <Row style={{ flexWrap: "wrap" }}>
           {identity.interests.map((v) => (
             <Badge key={v}>{v}</Badge>

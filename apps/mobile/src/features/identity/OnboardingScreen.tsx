@@ -244,15 +244,15 @@ export default function OnboardingScreen() {
               <PrototypeNote>Initials placeholder</PrototypeNote>
             </View>
           )}
-          <AppText variant="title">
+          <AppText localize={false} variant="title">
             {identity.name}, {identity.age}
           </AppText>
           <Row>
             <Badge>{identity.level}</Badge>
             <Badge>{identity.stance}</Badge>
           </Row>
-          <AppText>{identity.bio}</AppText>
-          <AppText>{identity.favoriteResorts}</AppText>
+          <AppText localize={false}>{identity.bio}</AppText>
+          <AppText localize={false}>{identity.favoriteResorts}</AppText>
           <Row style={{ flexWrap: "wrap" }}>
             {identity.interests.map((v) => (
               <Badge key={v}>{v}</Badge>

@@ -24,6 +24,7 @@ export function RiderAvatar({
       }}
     >
       <AppText
+        localize={false}
         style={{
           fontSize: size * 0.3,
           lineHeight: size * 0.45,

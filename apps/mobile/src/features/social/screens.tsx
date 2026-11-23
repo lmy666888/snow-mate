@@ -412,7 +412,11 @@ export function MatchScreen() {
             <RiderAvatar rider={rider} size={130} />
             <Heart size={30} color={c.accent} style={{ marginTop: 18 }} />
           </View>
-          <AppText variant="title" style={{ textAlign: "center" }}>
+          <AppText
+            localize={false}
+            variant="title"
+            style={{ textAlign: "center" }}
+          >
             {state.identity.name} & {rider.name}
           </AppText>
           <AppText style={{ color: c.muted, textAlign: "center" }}>
@@ -518,7 +522,7 @@ export function ChatScreen() {
                 backgroundColor: m.author === "you" ? c.raised : c.surface,
               }}
             >
-              <AppText>{m.body}</AppText>
+              <AppText localize={m.author !== "you"}>{m.body}</AppText>
             </AppCard>
           ))}
           <Field

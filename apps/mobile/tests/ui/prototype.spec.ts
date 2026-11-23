@@ -308,6 +308,17 @@ test("profile edits persist across navigation and reload without a backend", asy
   await page.reload();
   await expect(page.getByText("Demo Rider", { exact: true })).toBeVisible();
   await shot(page, "11-profile-redesign");
+  await page.goto("/profile/edit");
+  await page
+    .getByRole("textbox", { name: "Display name", exact: true })
+    .fill("Beginner");
+  await page
+    .getByRole("button", { name: "Save local profile", exact: true })
+    .click();
+  await page.goto("/profile/settings");
+  await page.getByRole("button", { name: "简体中文", exact: true }).click();
+  await page.goto("/profile");
+  await expect(page.getByText("Beginner", { exact: true })).toBeVisible();
 });
 
 test("touch drag, compact navigation, trip/pricing and synthetic coach regressions", async ({
