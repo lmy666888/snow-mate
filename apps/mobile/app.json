@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Snowmate",
+    "slug": "snowmate",
+    "scheme": "snowmate",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.snowmate.app"
+    },
+    "android": {
+      "package": "com.snowmate.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "Snowmate"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "snowmate",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "pnpm@11.24.0",
+  "scripts": {
+    "start": "pnpm --filter @snowmate/mobile start",
+    "web": "pnpm --filter @snowmate/mobile web",
+    "ios": "pnpm --filter @snowmate/mobile ios",
+    "typecheck": "pnpm --filter @snowmate/mobile typecheck",
+    "lint": "pnpm --filter @snowmate/mobile lint",
+    "build": "pnpm --filter @snowmate/mobile build",
+    "test": "tsx --test apps/mobile/tests/*.test.ts",
+    "test:ui": "playwright test",
+    "test:db": "bash scripts/test-db.sh"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^24.19.2",
+    "eslint": "^9.39.0",
+    "eslint-config-expo": "~58.0.0",
+    "prettier": "^3.10.1",
+    "tsx": "^4.20.0"
+  }
+}
