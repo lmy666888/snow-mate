@@ -4,8 +4,8 @@
 - Stable main / annotated v1.0.0 target: fda899348c0740242c67ad46307c1232b9fdd598 (M1.0).
 - Development branch: feature/m1.1-social-identity.
 - Draft PR: https://github.com/lmy666888/snow-mate/pull/1
-- Latest application-code commit: 47645281f8a8ecb3bbef34d416d7203fb008d695, remotely pushed and independently CI-verified.
-- Source-code CI: https://github.com/lmy666888/snow-mate/actions/runs/45130121666 (verify + database success).
+- Latest application-code commit: 6a74efc0c12f3241d0a477e0d7650d4300f7bef8, remotely pushed and independently CI-verified.
+- Source-code CI: https://github.com/lmy666888/snow-mate/actions/runs/45131312960 (verify + database success).
 - Review artifacts are committed after the code SHA. The exact current artifact HEAD is resolved from Git/PR, not hardcoded into a self-referencing commit. Final owner handoff reports the independently confirmed current HEAD.
 - Local final check set: 11 unit, 9 UI, 29 SQL assertions, typecheck/lint, compatible deps, Expo Doctor 20/20, Web + iOS JS exports.
 - Main protection enforced: verify/database, strict up-to-date checks, one approval, admins included, no force-push/deletion, resolved conversations.
