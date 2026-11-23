@@ -17,3 +17,8 @@
 | ADR-013 | No Supabase client/AI edge functions until approval | Credentials are unnecessary for this review, and backend connection is explicitly later scope. No production deploys or paid services. |
 
 | ADR-014 | Owner-directed pale pink base, mauve accents, Allura script wordmark | Latest explicit UI feedback overrides original dark-first concept. Bundled OFL font keeps branding offline; body remains native for readability. Light interface and dark StatusBar content are the current review target. |
+
+| ADR-015 | M1.1 phrase-key en/zh resources at shared UI boundaries | Keeps inherited prototype routes translated through AppText/Button/Field while dynamic user inputs remain original. Static key audit and en/zh interpolation parity are tested. Language never derives region. |
+| ADR-016 | Device-local identity and media adapters, no pretend auth/upload | M2.0 owns real Supabase auth. Native document files and Web IndexedDB retain local photos; actual native behavior remains device-test work. |
+| ADR-017 | Pure social rules + deterministic repository + versioned local store | Filters/history/blocks affect actual demo results; seeded reciprocity alone creates demo matches. Replacing data access later cannot turn fixture flags into real authorization. |
+| ADR-018 | Main protection enabled; M1.1 is an unmerged PR | Required checks/review/admin enforcement are API-confirmed. No automatic milestone acceptance, final tag or release. |

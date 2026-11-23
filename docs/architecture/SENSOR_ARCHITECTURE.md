@@ -1,3 +1,5 @@
+> M1.1 update: sensor-protocol now also exports MotionSession, MotionEvent, MotionFeatures, CoachReport, CalibrationMetadata and DataOrigin. They include session/batch origin, protocol/algorithm/model versions, SI units, calibration/clock/quality/evidence metadata. No provider implementation or new analysis engine exists. The following M1.0 design rationale remains relevant; M1.2 100 Hz simulator is not authorized.
+
 # Sensor architecture — contract only before approval
 
 ## Existing artifacts and boundary

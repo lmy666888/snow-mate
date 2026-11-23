@@ -1,6 +1,6 @@
 # Release process
 
-VERSION is the authoritative application SemVer (development may use 1.1.0-dev). Build metadata derives milestone label and short SHA from VERSION and Git; package/app configuration is derived or synchronized, not manually used as competing authority. Milestone M1.1 maps to final v1.1.0 only when approved. GitHub Releases require approval separately.
+VERSION is the authoritative application SemVer (development may use 1.1.0-dev). Build metadata derives milestone label and short SHA from VERSION and Git using scripts/build-metadata.mjs (generated ignored JSON) and Expo config; package/app configuration is derived or synchronized, not manually used as competing authority. Milestone M1.1 maps to final v1.1.0 only when approved. GitHub Releases require approval separately.
 
 1. Confirm scope and owner approval. Require clean reviewed PR and passing checks.
 2. Review secrets/current tree/history, migrations, provenance, real device status and release blockers.
