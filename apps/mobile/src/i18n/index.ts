@@ -18,6 +18,11 @@ export function tr(value: string): string {
   if (Object.hasOwn(en, normalized)) return i18n.t(normalized);
   const patterns: [RegExp, string, string[]][] = [
     [
+      /^Snowmate (M[0-9.]+) · Demo Release Candidate$/,
+      "Snowmate {{milestone}} · Demo Release Candidate",
+      ["milestone"],
+    ],
+    [
       /^Snowmate (M[0-9.]+) · Development$/,
       "Snowmate {{milestone}} · Development",
       ["milestone"],

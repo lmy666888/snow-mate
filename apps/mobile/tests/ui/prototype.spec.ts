@@ -1,7 +1,12 @@
 import { test, expect, type Page } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
-const review = path.resolve("docs/design/review/m1.1");
+const applicationVersion = fs.readFileSync("VERSION", "utf8").trim();
+const [major, minor] = applicationVersion.split(".");
+const milestoneLabel = `Snowmate M${major}.${minor} · ${applicationVersion.includes("-") ? "Development" : "Demo Release Candidate"}`;
+const review = path.resolve(
+  process.env.SNOWMATE_REVIEW_DIR ?? "docs/design/review/m1.1",
+);
 fs.mkdirSync(review, { recursive: true });
 const initialRoutes: string[] = JSON.parse(
   fs.readFileSync("docs/design/review/day1/routes.json", "utf8"),
@@ -128,11 +133,24 @@ test("English and Chinese switch dynamically, persist, and remain independent of
   await expect(page.getByText("Your space. Your rules.")).toBeVisible();
   expect((await stored(page)).region.country).toBe("CN");
   await page
-    .getByText("Snowmate M1.1 · Development", { exact: true })
+    .getByText(milestoneLabel, { exact: true })
     .scrollIntoViewIfNeeded();
-  await expect(page.getByText("1.1.0-dev", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText(applicationVersion, { exact: true }),
+  ).toBeVisible();
   await expect(page.getByText(/^[a-f0-9]{7}$/)).toBeVisible();
   await shot(page, "09-settings-version");
+  await page.getByRole("button", { name: "简体中文", exact: true }).click();
+  await page
+    .getByText(
+      `Snowmate M${major}.${minor} · ${applicationVersion.includes("-") ? "开发版" : "演示候选版"}`,
+      { exact: true },
+    )
+    .scrollIntoViewIfNeeded();
+  await expect(
+    page.getByText(applicationVersion, { exact: true }),
+  ).toBeVisible();
+  await shot(page, "16-settings-version-zh");
 });
 
 test("one-sided likes do not match; undo restores cards and viewed state persists", async ({

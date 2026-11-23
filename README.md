@@ -1,6 +1,6 @@
 # Snowmate
 
-iPhone-first 单板滑雪应用。稳定 M1.0 已保存为 `v1.0.0`；当前为 **M1.1 / 1.1.0-dev 审阅候选**，尚未合并或发布。
+iPhone-first 单板滑雪应用。稳定 M1.0 已保存为 `v1.0.0`；当前分支准备 **M1.1 / 1.1.0 Demo Release Candidate**：owner 已通过功能演示阶段验收，独立 GitHub 审批及受保护合并仍未完成，不是生产版本。
 
 M1.1 提供双语、地区偏好、七步本地身份、照片管理、40 人虚构资料库和持久化演示探索/配对。没有真实 Auth、云上传、真实互赞、AI、实时票价或 BLE。
 
@@ -68,6 +68,8 @@ pnpm test:db
 Trips、Prices、Coach、Community 仍是原有样例和局部临时交互，不能视作本轮已完成功能。票价虚构且未验证，运动图表手工合成，未推断真实技术或 AI 准确率。
 
 ## 工程约定
+
+[M1.1 验收记录](docs/releases/M1.1_APPROVAL.md) 与 [发布流程状态](docs/releases/M1.1_RELEASE_STATUS.md) 记录了有条件的合并/标签授权。
 
 VERSION 是应用版本来源，`pnpm version:sync` 同步 manifests，`pnpm version:check` 防止漂移。设置展示构建时的里程碑与 Git SHA。main 只接受 owner 已批准且通过 CI 的 PR；不自动合并、打最终标签、发布或开始下一里程碑。
 

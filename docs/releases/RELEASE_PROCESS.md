@@ -9,4 +9,4 @@ VERSION is the authoritative application SemVer (development may use 1.1.0-dev).
 5. Create annotated final tag on accepted main; inspect existing tags, never move them.
 6. Push and independently verify branch/tag SHA and accessible contents. Do not claim a Release/deployment without actual confirmed action.
 
-M1.0 v1.0.0 is already preserved. No M1.1 final release authorized. Native iOS signing/build number and store submission are future explicit release tasks; an Expo JS bundle is not an App Store build.
+M1.0 v1.0.0 is already preserved. M1.1 owner acceptance authorizes a Demo Release Candidate merge/tag only after the existing independent-review and CI requirements are satisfied; see M1.1_APPROVAL.md. No production release is authorized. Native iOS signing/build number and store submission are future explicit release tasks; an Expo JS bundle is not an App Store build.

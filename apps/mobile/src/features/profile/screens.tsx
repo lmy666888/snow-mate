@@ -299,7 +299,7 @@ export function SettingsScreen() {
         </PrototypeNote>
       </AppCard>
       <AppCard>
-        <AppText variant="title">{`Snowmate ${build?.milestone ?? "M1.1"} · ${build?.development ? "Development" : "Prototype"}`}</AppText>
+        <AppText variant="title">{`Snowmate ${build?.milestone ?? "M1.1"} · ${build?.development ? "Development" : "Demo Release Candidate"}`}</AppText>
         <InfoRow label="Version" value={build?.version ?? "unknown"} />
         <InfoRow label="Git commit" value={build?.sha ?? "unknown"} />
         <InfoRow label="Backend connection" value="Not connected" />

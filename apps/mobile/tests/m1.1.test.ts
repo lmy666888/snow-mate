@@ -199,3 +199,16 @@ test("persisted settings recover safely from corrupt fields without accepting re
   assert.equal(eligibility(recovered.identity), "adult-required");
   assert.deepEqual(recovered.matches, []);
 });
+
+test("demo release labeling remains explicitly non-production in both languages", async () => {
+  await i18n.changeLanguage("zh");
+  assert.equal(
+    tr("Snowmate M1.1 · Demo Release Candidate"),
+    "Snowmate M1.1 · 演示候选版",
+  );
+  await i18n.changeLanguage("en");
+  assert.equal(
+    tr("Snowmate M1.1 · Demo Release Candidate"),
+    "Snowmate M1.1 · Demo Release Candidate",
+  );
+});
