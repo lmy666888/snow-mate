@@ -1,0 +1,58 @@
+name: Snowmate CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm version:check
+      - run: node scripts/extract-ui-text.cjs --check
+      - run: node scripts/security-scan.mjs
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:ui
+      - run: pnpm build
+      - run: pnpm build:ios
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: snowmate_policy_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate local role policies against disposable PostgreSQL
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: 5432
+          PGUSER: postgres
+          PGDATABASE: snowmate_policy_test
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/bootstrap.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/202611230001_essential_foundation.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/policies.sql

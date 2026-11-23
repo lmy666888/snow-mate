@@ -1,3 +1,4 @@
+import { useSocial } from "../../stores/social";
 import React, { useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { CalendarDays, ShieldCheck, Ticket } from "lucide-react-native";
@@ -19,6 +20,7 @@ import { colors as c } from "../../theme/tokens";
 import { formatOffer, offers } from "./data";
 import type { TicketOffer } from "@snowmate/shared-types";
 export function PriceCard({ offer }: { offer: TicketOffer }) {
+  const language = useSocial((s) => s.language);
   return (
     <AppCard>
       <Row style={{ justifyContent: "space-between" }}>
@@ -30,7 +32,7 @@ export function PriceCard({ offer }: { offer: TicketOffer }) {
       <Row style={{ justifyContent: "space-between", alignItems: "flex-end" }}>
         <ViewCopy offer={offer} />
         <AppText style={{ fontSize: 34, fontWeight: "600", lineHeight: 40 }}>
-          {formatOffer(offer.amount, offer.currency)}
+          {formatOffer(offer.amount, offer.currency, language)}
         </AppText>
       </Row>
       <AppText variant="caption" style={{ color: c.muted }}>
@@ -97,6 +99,7 @@ export function PriceComparisonScreen() {
   );
 }
 export function TicketOfferScreen() {
+  const language = useSocial((s) => s.language);
   const { id } = useLocalSearchParams();
   const offer = offers.find((o) => o.id === id) ?? offers[0];
   return (
@@ -106,13 +109,16 @@ export function TicketOfferScreen() {
         <Ticket size={36} color={c.accent} />
         <Badge tone="gold">FICTIONAL OFFER · DEMO</Badge>
         <AppText variant="display">
-          {formatOffer(offer.amount, offer.currency)} USD
+          {formatOffer(offer.amount, offer.currency, language)} USD
         </AppText>
         <AppText>{offer.ticketType}</AppText>
         <InfoRow label="Resort" value={offer.resort} />
         <InfoRow
           label="Visit date"
-          value={offer.visitDate}
+          value={new Intl.DateTimeFormat(language, {
+            dateStyle: "medium",
+            timeZone: "UTC",
+          }).format(new Date(offer.visitDate + "T00:00:00Z"))}
           icon={CalendarDays}
         />
         <InfoRow label="Provider" value={offer.provider} />

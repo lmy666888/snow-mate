@@ -1,3 +1,5 @@
+import { useSocial } from "../../stores/social";
+import { formatMoney } from "../regions/model";
 import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, Share, View } from "react-native";
@@ -99,6 +101,7 @@ export function TripsScreen() {
   );
 }
 export function TripPlannerScreen() {
+  const { region, language } = useSocial();
   const [fields, setFields] = useState({
     start: "Boston, MA",
     destination: "Vermont mountains",
@@ -143,7 +146,7 @@ export function TripPlannerScreen() {
       <Row>
         <View style={{ flex: 1 }}>
           <Field
-            label="Budget / person · USD"
+            label={`Budget / person · ${region.currency}`}
             value={fields.budget}
             onChangeText={set("budget")}
             keyboardType="numeric"
@@ -158,6 +161,9 @@ export function TripPlannerScreen() {
           />
         </View>
       </Row>
+      <AppText>
+        {formatMoney(Number(fields.budget) || 0, region.currency, language)}
+      </AppText>
       <ChoiceGroup
         label="Skill level"
         options={["Beginner", "Intermediate", "Advanced", "Expert"]}

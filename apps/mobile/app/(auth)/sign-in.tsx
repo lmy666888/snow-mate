@@ -1,1 +1,2 @@
-export { SignInScreen as default } from "../../src/features/auth/screens";
+import { Redirect } from "expo-router";
+export default function LegacyIdentityRoute() { return <Redirect href="/identity/onboarding" />; }

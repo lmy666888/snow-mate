@@ -1,6 +1,10 @@
 # Snowmate
 
-iPhone-first 单板滑雪应用的 Day 1 架构与高保真 UI 原型。M1.0 (`v1.0.0`) 为保留基线：尚未接入真实登录、AI、价格、消息或传感器。
+iPhone-first 单板滑雪应用。稳定 M1.0 已保存为 `v1.0.0`；当前分支准备 **M1.1 / 1.1.0 Demo Release Candidate**：owner 已通过功能演示阶段验收，独立 GitHub 审批及受保护合并仍未完成，不是生产版本。
+
+M1.1 提供双语、地区偏好、七步本地身份、照片管理、40 人虚构资料库和持久化演示探索/配对。没有真实 Auth、云上传、真实互赞、AI、实时票价或 BLE。
+
+先看 [M1.1 审阅包](docs/design/review/m1.1/REVIEW.md)、[工程报告](docs/releases/M1.1_ENGINEERING_REPORT.md)、[验证记录](docs/testing/M1.1_VERIFICATION.md) 和 [仓库状态](docs/releases/REMOTE_STATUS.md)。M1.0 的 Day 1 文档与截图保留为历史材料。
 
 ## 启动
 
@@ -43,9 +47,9 @@ pnpm typecheck
 pnpm lint
 pnpm test
 pnpm build
-pnpm --filter @snowmate/mobile exec expo export --platform ios --output-dir dist-ios
+pnpm build:ios
 pnpm --filter @snowmate/mobile exec expo install --check
-pnpm --filter @snowmate/mobile dlx expo-doctor
+pnpm --dir apps/mobile dlx expo-doctor
 PLAYWRIGHT_BROWSERS_PATH="$PWD/.local/browsers" pnpm exec playwright install chromium
 PLAYWRIGHT_BROWSERS_PATH="$PWD/.local/browsers" pnpm test:ui
 pnpm test:db
@@ -57,8 +61,16 @@ pnpm test:db
 
 ## 当前交互边界
 
-滑卡/按钮、示例匹配、聊天/评论输入、行程编辑与收藏、资料编辑、隐私开关均为 UI 预览。Zustand 的名字、站姿、级别及收藏状态仅在当前 JS 会话内保留，其余多为屏幕局部状态。重新加载会重置；示例匹配不代表真实互赞。
+社交演示的身份、地区、语言、筛选、已看、喜欢、匹配、屏蔽与聊天使用独立版本化本地存储，刷新保留。40 人资料明确虚构，预置双向喜欢才配对，单向喜欢不会配对。账号预览的成人/照片限制仅是本地演示，不等于认证或服务端权限。
 
-价格均为虚构 USD 数字，未验证且不可购买。图表是手工固定合成示意，不是真实测量或 AI 推断。素材可替换，见 [授权来源](apps/mobile/assets/ATTRIBUTION.md)。
+照片通过系统选图，仅保存在本机（Web IndexedDB、原生文档子目录），最多六张，支持校验/主图/排序/删除。可能保留源元数据；未做生产级图片安全和云存储。不要用本地演示存储保存密码或认证 token。
 
-远端为 [lmy666888/snow-mate](https://github.com/lmy666888/snow-mate)，本地分支 `codex/day1-ui-foundation`；M1.0 基线已获授权保存至 GitHub；具体状态见 [PROJECT_STATUS](PROJECT_STATUS.md) 和 [M1.0 版本说明](docs/releases/M1.0_RELEASE_NOTES.md)。不部署、不购买服务。后续里程碑必须通过 PR 和 owner 审批，不能自动合并或发布。
+Trips、Prices、Coach、Community 仍是原有样例和局部临时交互，不能视作本轮已完成功能。票价虚构且未验证，运动图表手工合成，未推断真实技术或 AI 准确率。
+
+## 工程约定
+
+[M1.1 验收记录](docs/releases/M1.1_APPROVAL.md) 与 [发布流程状态](docs/releases/M1.1_RELEASE_STATUS.md) 记录了有条件的合并/标签授权。
+
+VERSION 是应用版本来源，`pnpm version:sync` 同步 manifests，`pnpm version:check` 防止漂移。设置展示构建时的里程碑与 Git SHA。main 只接受 owner 已批准且通过 CI 的 PR；不自动合并、打最终标签、发布或开始下一里程碑。
+
+远端：[lmy666888/snow-mate](https://github.com/lmy666888/snow-mate)。M1.0 已推送；M1.1 在 feature/m1.1-social-identity 上审阅。无生产部署、无服务购买。

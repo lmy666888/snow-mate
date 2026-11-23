@@ -1,3 +1,5 @@
+> M1.0 historical architecture below. M1.1 adds `i18n`, `features/identity`, `features/regions`, `services/photos[.web]`, `stores/social`, `social/demoRepository`, pure logic and validated persistence. Current behavior/status is documented in `docs/releases/M1.1_ENGINEERING_REPORT.md`. The old ephemeral social/profile description is not the current M1.1 implementation; Trips/Prices/Coach/Community remain prototypes.
+
 # System architecture
 
 ## Implemented topology
