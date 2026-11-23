@@ -169,7 +169,6 @@ export function DiscoverScreen() {
           <Animated.View
             {...responder.panHandlers}
             style={{
-              touchAction: "pan-y",
               transform: [
                 ...position.getTranslateTransform(),
                 {
