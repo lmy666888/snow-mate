@@ -127,6 +127,11 @@ test("English and Chinese switch dynamically, persist, and remain independent of
   await page.getByRole("button", { name: "English", exact: true }).click();
   await expect(page.getByText("Your space. Your rules.")).toBeVisible();
   expect((await stored(page)).region.country).toBe("CN");
+  await page
+    .getByText("Snowmate M1.1 · Development", { exact: true })
+    .scrollIntoViewIfNeeded();
+  await expect(page.getByText("1.1.0-dev", { exact: true })).toBeVisible();
+  await expect(page.getByText(/^[a-f0-9]{7}$/)).toBeVisible();
   await shot(page, "09-settings-version");
 });
 
