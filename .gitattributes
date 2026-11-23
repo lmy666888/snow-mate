@@ -1,0 +1,2 @@
+# Preserve upstream font license verbatim, including its original CRLF/trailing spaces.
+apps/mobile/assets/fonts/OFL-Allura.txt -whitespace
