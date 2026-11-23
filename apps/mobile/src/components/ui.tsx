@@ -1,4 +1,6 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
+import { tr } from "../i18n";
 import {
   ActivityIndicator,
   Image,
@@ -40,9 +42,12 @@ export function AppText({
 }: React.ComponentProps<typeof Text> & {
   variant?: "body" | "caption" | "label" | "title" | "display";
 }) {
+  useTranslation();
   return (
     <Text {...props} style={[s.text, s[variant], style]}>
-      {children}
+      {React.Children.map(children, (child) =>
+        typeof child === "string" ? tr(child) : child,
+      )}
     </Text>
   );
 }
@@ -61,10 +66,11 @@ export function AppButton({
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
+  useTranslation();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={tr(label)}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
@@ -105,10 +111,11 @@ export function IconButton({
   size?: number;
   accent?: boolean;
 }) {
+  useTranslation();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={tr(label)}
       onPress={onPress}
       style={({ pressed }) => ({
         width: size,
@@ -178,6 +185,7 @@ export function Chip({
     <Pressable
       accessibilityRole={onPress ? "button" : "text"}
       accessibilityState={{ selected }}
+      aria-pressed={selected}
       onPress={onPress}
       style={[
         s.chip,
@@ -246,7 +254,7 @@ export function ScreenContainer({
         {notice && (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Dismiss notification"
+            accessibilityLabel={tr("Dismiss notification")}
             accessibilityLiveRegion="polite"
             onPress={() => notify(null)}
             style={s.toast}
@@ -341,16 +349,17 @@ export function Field({
   secureTextEntry?: boolean;
   keyboardType?: React.ComponentProps<typeof TextInput>["keyboardType"];
 }) {
+  useTranslation();
   return (
     <View style={{ gap: 8 }}>
       <AppText variant="label" style={{ color: c.muted }}>
         {label}
       </AppText>
       <TextInput
-        accessibilityLabel={label}
+        accessibilityLabel={tr(label)}
         value={value}
         onChangeText={onChangeText}
-        placeholder={placeholder}
+        placeholder={placeholder ? tr(placeholder) : undefined}
         placeholderTextColor={c.muted}
         multiline={multiline}
         secureTextEntry={secureTextEntry}
@@ -437,7 +446,7 @@ export function HeroCard({
   return (
     <Pressable
       accessibilityRole={onPress ? "button" : "text"}
-      accessibilityLabel={title}
+      accessibilityLabel={tr(title)}
       onPress={onPress}
     >
       <ImageBackground
@@ -586,7 +595,7 @@ export function BottomSheet({
       onRequestClose={onClose}
     >
       <View style={s.scrim}>
-        <View style={s.sheet}>
+        <View style={[s.sheet, { maxHeight: "90%" }]}>
           <View
             style={{
               alignSelf: "center",
@@ -600,7 +609,12 @@ export function BottomSheet({
             <AppText variant="title">{title}</AppText>
             <IconButton icon={X} label="Close sheet" onPress={onClose} />
           </Row>
-          {children}
+          <ScrollView
+            contentContainerStyle={{ gap: 20 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            {children}
+          </ScrollView>
         </View>
       </View>
     </Modal>

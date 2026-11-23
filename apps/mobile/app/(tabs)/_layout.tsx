@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { tr } from "../../src/i18n";
 import { Tabs } from "expo-router";
 import {
   Compass,
@@ -15,6 +17,7 @@ const icons = {
   profile: UserRound,
 };
 export default function TabsLayout() {
+  useTranslation();
   return (
     <Tabs
       screenOptions={{
@@ -37,7 +40,7 @@ export default function TabsLayout() {
           key={name}
           name={name}
           options={{
-            title: name[0].toUpperCase() + name.slice(1),
+            title: tr(name[0].toUpperCase() + name.slice(1)),
             tabBarIcon: ({ color, size }) => (
               <Icon size={size - 2} color={color} strokeWidth={1.6} />
             ),

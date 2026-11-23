@@ -37,8 +37,12 @@ export const offers: TicketOffer[] = [
     origin: "demo",
   },
 ];
-export function formatOffer(amount: number, currency: string) {
-  return new Intl.NumberFormat("en-US", {
+export function formatOffer(
+  amount: number,
+  currency: string,
+  locale = "en-US",
+) {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
     maximumFractionDigits: 0,
