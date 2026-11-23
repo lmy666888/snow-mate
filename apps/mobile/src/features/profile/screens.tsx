@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ImageBackground, Switch, View } from "react-native";
-import Constants from "expo-constants";
+import build from "../../generated/build.json";
 import { useTranslation } from "react-i18next";
 import { Camera, Settings } from "lucide-react-native";
 import {
@@ -238,15 +238,7 @@ export function SettingsScreen() {
   const { language, setLanguage, region, discoveryVisible, setVisibility } =
       useSocial(),
     { i18n } = useTranslation(),
-    error = useStorageError(),
-    build = Constants.expoConfig?.extra?.build as
-      | {
-          version: string;
-          milestone: string;
-          sha: string;
-          development: boolean;
-        }
-      | undefined;
+    error = useStorageError();
   return (
     <ScreenContainer>
       <PageHeader

@@ -2,7 +2,7 @@ name: Snowmate CI
 on:
   pull_request:
   push:
-    branches: [main, 'feature/**', 'chore/**']
+    branches: [main]
 permissions:
   contents: read
 concurrency:
@@ -31,7 +31,7 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:ui
       - run: pnpm build
-      - run: pnpm --filter @snowmate/mobile exec expo export --platform ios --output-dir dist-ios
+      - run: pnpm build:ios
   database:
     runs-on: ubuntu-latest
     timeout-minutes: 5

@@ -19,3 +19,4 @@ coverage/
 *.p12
 *.pfx
 *.mobileprovision
+apps/mobile/src/generated/build.json

@@ -7,15 +7,17 @@
     "start": "pnpm --filter @snowmate/mobile start",
     "web": "pnpm --filter @snowmate/mobile web",
     "ios": "pnpm --filter @snowmate/mobile ios",
-    "typecheck": "pnpm --filter @snowmate/mobile typecheck",
+    "typecheck": "node scripts/build-metadata.mjs && pnpm --filter @snowmate/mobile typecheck",
     "lint": "pnpm --filter @snowmate/mobile lint",
     "build": "pnpm --filter @snowmate/mobile build",
     "test": "tsx --test apps/mobile/tests/*.test.ts",
-    "test:ui": "playwright test",
+    "test:ui": "node scripts/build-metadata.mjs && playwright test",
     "test:db": "bash scripts/test-db.sh",
     "version:sync": "node scripts/sync-version.mjs",
     "version:check": "node scripts/sync-version.mjs --check",
-    "security": "node scripts/security-scan.mjs"
+    "security": "node scripts/security-scan.mjs",
+    "metadata": "node scripts/build-metadata.mjs",
+    "build:ios": "node scripts/build-metadata.mjs && pnpm --filter @snowmate/mobile exec expo export --platform ios --output-dir dist-ios"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
