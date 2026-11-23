@@ -22,6 +22,8 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm version:check
+      - run: node scripts/extract-ui-text.cjs --check
       - run: node scripts/security-scan.mjs
       - run: pnpm typecheck
       - run: pnpm lint
