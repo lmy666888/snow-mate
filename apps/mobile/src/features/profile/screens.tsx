@@ -73,7 +73,9 @@ export function ProfileScreen() {
               borderRadius: 18,
             }}
           >
-            <AppText variant="display">{initials(identity.name)}</AppText>
+            <AppText localize={false} variant="display">
+              {initials(identity.name)}
+            </AppText>
             <PrototypeNote>Initials placeholder</PrototypeNote>
           </View>
         )}
@@ -119,7 +121,11 @@ export function ProfileScreen() {
       )}
       <SectionHeader title="Riding identity" />
       <AppCard>
-        <InfoRow label="Favorite resorts" value={identity.favoriteResorts} />
+        <InfoRow
+          label="Favorite resorts"
+          localizeValue={false}
+          value={identity.favoriteResorts}
+        />
         <InfoRow label="Riding style" value={identity.style} />
         <InfoRow label="Trip preferences" value={identity.tripPreference} />
         <InfoRow label="Matching preferences" value={identity.matching} />

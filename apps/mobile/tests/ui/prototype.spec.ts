@@ -313,12 +313,21 @@ test("profile edits persist across navigation and reload without a backend", asy
     .getByRole("textbox", { name: "Display name", exact: true })
     .fill("Beginner");
   await page
+    .getByRole("textbox", { name: "Biography", exact: true })
+    .fill("Settings");
+  await page
+    .getByRole("textbox", { name: "Favorite resorts", exact: true })
+    .fill("Language");
+  await page
     .getByRole("button", { name: "Save local profile", exact: true })
     .click();
   await page.goto("/profile/settings");
   await page.getByRole("button", { name: "简体中文", exact: true }).click();
   await page.goto("/profile");
   await expect(page.getByText("Beginner", { exact: true })).toBeVisible();
+  await expect(page.getByText("Settings", { exact: true })).toBeVisible();
+  await page.getByText("Language", { exact: true }).scrollIntoViewIfNeeded();
+  await expect(page.getByText("Language", { exact: true })).toBeVisible();
 });
 
 test("touch drag, compact navigation, trip/pricing and synthetic coach regressions", async ({

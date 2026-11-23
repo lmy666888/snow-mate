@@ -11,7 +11,7 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
   initAsync: false,
 });
-/** Phrase keys keep legacy prototype screens localizable through shared UI primitives. User-entered names/text pass through unchanged. */
+/** Phrase keys keep legacy prototype screens localizable through shared UI primitives. User-owned content opts out at the AppText boundary with localize=false. */
 export function tr(value: string): string {
   const normalized = value.replace(/\s+/g, " ").trim();
   if (!/[A-Za-z\u3400-\u9fff]/.test(normalized)) return value;
